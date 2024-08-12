@@ -9,6 +9,6 @@ public class ChessioServerApplication
 	public static void main(String[] args)
 	{
 		SpringApplication.run(ChessioServerApplication.class, args);
-		System.out.println("hello!");
+		System.out.println("hello world!");
 	}
 }
