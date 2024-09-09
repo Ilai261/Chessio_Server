@@ -1,1 +1,2 @@
 spring.application.name=Chessio_Server
+server.port=44444
