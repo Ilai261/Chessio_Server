@@ -1,2 +1,7 @@
 spring.application.name=Chessio_Server
 server.port=44444
+
+spring.datasource.url=jdbc:mysql://localhost:3306/chessio?useSSL=false&serverTimezone=Asia/Jerusalem
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.hibernate.ddl-auto=update
