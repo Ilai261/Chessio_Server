@@ -25,14 +25,14 @@ public class Controllers
         return userRepository.findAll();
     }
 
-    @PostMapping(value = "/save")
+    @PostMapping(value = "save")
     public String saveUser(@RequestBody User user)
     {
         userRepository.save(user);
         return "Saved";
     }
 
-    @PutMapping(value = "/update/{id}")
+    @PutMapping(value = "update/{id}")
     public String updateUser(@PathVariable long id, @RequestBody User user)
     {
         User updatedUser = userRepository.findById(id).get();
@@ -42,10 +42,11 @@ public class Controllers
         return "Updated";
     }
 
-    @DeleteMapping(value = "/delete/{id}")
+    @DeleteMapping(value = "delete/{id}")
     public String deleteUser(@PathVariable long id)
     {
         userRepository.deleteById(id);
         return String.format("deleted user with id %d", id);
     }
+
 }
