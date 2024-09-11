@@ -5,7 +5,8 @@ import org.chessio.chessio_server.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.util.Optional;
+
 
 @RestController
 public class Controllers
@@ -13,40 +14,44 @@ public class Controllers
     @Autowired
     private UserRepository userRepository;
 
-    @GetMapping(value = "/")
-    public String getPage()
+
+    @PostMapping(value = "register")
+    public String attemptToRegisterUser(@RequestBody User user)
     {
-        return "Hello World";
+        // check if username already exists
+        if (this.userExistsByUsername(user.getUserName())) // if it does then return an error
+        {
+            return "User_already_exists";
+        }
+        else // else register the user and return success
+        {
+            userRepository.save(user);
+            return "Registered_successfully";
+        }
     }
 
-    @GetMapping(value = "users")
-    public List<User> getUsers()
+    @PostMapping(value = "login")
+    public String attemptToLoginUser(@RequestBody User user)
     {
-        return userRepository.findAll();
+        Optional<User> _user = this.getUserByUsername(user.getUserName());
+        if (_user.isPresent()) {
+            boolean userValid = _user.get().getPassword().equals(user.getPassword()); // compare both passwords
+            if (userValid) {
+                return "login_successful";
+            }
+        }
+        return "login_failed";
     }
 
-    @PostMapping(value = "save")
-    public String saveUser(@RequestBody User user)
+
+    private boolean userExistsByUsername(String userName)
     {
-        userRepository.save(user);
-        return "Saved";
+        return userRepository.findByuserName(userName).isPresent();
     }
 
-    @PutMapping(value = "update/{id}")
-    public String updateUser(@PathVariable long id, @RequestBody User user)
+    private Optional<User> getUserByUsername(String userName)
     {
-        User updatedUser = userRepository.findById(id).get();
-        updatedUser.setUserName(user.getUserName());
-        updatedUser.setPassword(user.getPassword());
-        userRepository.save(updatedUser);
-        return "Updated";
-    }
-
-    @DeleteMapping(value = "delete/{id}")
-    public String deleteUser(@PathVariable long id)
-    {
-        userRepository.deleteById(id);
-        return String.format("deleted user with id %d", id);
+        return userRepository.findByuserName(userName);
     }
 
 }
