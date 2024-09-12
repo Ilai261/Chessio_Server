@@ -2,24 +2,27 @@ package org.chessio.chessio_server.Models;
 
 import jakarta.persistence.*;
 
+import java.util.UUID;
+
 @Entity
 public class User
 {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long userID;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(columnDefinition = "BINARY(16)", unique = true, nullable = false)
+    private UUID userID;
 
-    @Column()
+    @Column(unique = true, nullable = false)
     private String userName;
 
-    @Column()
+    @Column(nullable = false)
     private String password;
 
-    public long getUserID() {
+    public UUID getUserID() {
         return userID;
     }
 
-    public void setUserID(long userID) {
+    public void setUserID(UUID userID) {
         this.userID = userID;
     }
 
