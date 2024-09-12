@@ -1,4 +1,4 @@
-package org.chessio.chessio_server.repository;
+package org.chessio.chessio_server.Repositories;
 
 import org.chessio.chessio_server.Models.User;
 import org.springframework.data.jpa.repository.JpaRepository;

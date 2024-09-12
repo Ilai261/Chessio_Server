@@ -1,6 +1,8 @@
-package org.chessio.chessio_server.Server_controller;
+package org.chessio.chessio_server.ServerControllers;
 
+import org.chessio.chessio_server.Models.Game;
 import org.chessio.chessio_server.Models.User;
+import org.chessio.chessio_server.Services.GameService;
 import org.chessio.chessio_server.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,8 @@ public class Controllers
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private GameService gameService;
 
     @PostMapping(value = "register")
     public String attemptToRegisterUser(@RequestBody User user)
@@ -42,6 +46,12 @@ public class Controllers
             }
         }
         return "login_failed";
+    }
+
+    @PostMapping(value = "createGame")
+    public String createGame(@RequestBody Game game) {
+        gameService.saveGame(game);
+        return "Game_created_successfully";
     }
 
 }

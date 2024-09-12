@@ -1,7 +1,7 @@
 package org.chessio.chessio_server.Services;
 
 import org.chessio.chessio_server.Models.User;
-import org.chessio.chessio_server.repository.UserRepository;
+import org.chessio.chessio_server.Repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
