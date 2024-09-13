@@ -8,6 +8,7 @@ import org.chessio.chessio_server.Services.GameService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
+@Transactional
 class ChessioServerApplicationTests {
 
 	@Autowired
@@ -50,12 +52,9 @@ class ChessioServerApplicationTests {
 		assertFalse(games.isEmpty(), "Game history should not be empty for player1");
 
 		// Check if the game created is in the list
-		assertTrue(games.stream().anyMatch(g -> g.getPlayer1().getUserName().equals(player1.getUserName())
-						&& g.getPlayer1().getPassword().equals(player1.getPassword())
-						&& g.getPlayer2().getUserName().equals(player2.getUserName())
-						&& g.getPlayer2().getPassword().equals(player2.getPassword())
-						&& g.getWinner().getUserName().equals(player1.getUserName())
-						&& g.getWinner().getPassword().equals(player1.getPassword())
+		assertTrue(games.stream().anyMatch(g -> g.getPlayer1().equals(player1)
+						&& g.getPlayer2().equals(player2)
+						&& g.getWinner().equals(player1)
         ), "Game history should contain the game played by player1");
 	}
 

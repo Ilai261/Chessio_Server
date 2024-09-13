@@ -1,5 +1,6 @@
 package org.chessio.chessio_server.Services;
 
+import org.springframework.transaction.annotation.Transactional;
 import org.chessio.chessio_server.Models.Game;
 import org.chessio.chessio_server.Repositories.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +15,17 @@ public class GameService {
     @Autowired
     private GameRepository gameRepository;
 
-    // Method to save a new game
-    public void saveGame(Game game) {
+    // method to save a new game
+    @Transactional
+    public void saveGame(Game game)
+    {
         gameRepository.save(game);
     }
 
-    // Method to retrieve a player's game history
-    public List<Game> getPlayerGameHistory(UUID userId) {
+    // method to retrieve a player's game history
+    @Transactional(readOnly = true)
+    public List<Game> getPlayerGameHistory(UUID userId)
+    {
         return gameRepository.findAllByPlayerId(userId);
     }
 }

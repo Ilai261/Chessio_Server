@@ -12,15 +12,15 @@ public class Game
     @Column(columnDefinition = "BINARY(16)", unique = true, nullable = false)
     private UUID gameID;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "player1_id", nullable = false)
     private User player1;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "player2_id", nullable = false)
     private User player2;
 
-    @ManyToOne
+    @ManyToOne()
     @JoinColumn(name = "winner_id")
     private User winner;
 
