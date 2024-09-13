@@ -7,6 +7,8 @@ import org.chessio.chessio_server.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -26,12 +28,12 @@ public class Controllers
         // check if username already exists
         if (userService.userExistsByUsername(user.getUserName())) // if it does then return an error
         {
-            return "User_already_exists";
+            return "user_already_exists";
         }
         else // else register the user and return success
         {
             userService.saveUser(user);
-            return "Registered_successfully";
+            return "registered_successfully";
         }
     }
 
@@ -45,13 +47,28 @@ public class Controllers
                 return "login_successful";
             }
         }
-        return "login_failed";
+        return "login_failed: UserName or password are incorrect";
     }
 
-    @PostMapping(value = "createGame")
-    public String createGame(@RequestBody Game game) {
-        gameService.saveGame(game);
-        return "Game_created_successfully";
+    @PostMapping(value = "game_history")
+    public List<Game> getGameHistoryOfUser(@RequestBody String userName)
+    {
+        Optional<User> _user = userService.getUserByUsername(userName);
+        if (_user.isPresent()) {
+            try
+            {
+                List<Game> gameList = gameService.getPlayerGameHistory(_user.get().getUserID());
+                System.out.println("game_history_retrieved_successfully");
+                return gameList;
+            }
+            catch (Exception e)
+            {
+                System.out.println("error in retrieving the games for user " + userName + " , "
+                        + Arrays.toString(e.getStackTrace()));
+                return null;
+            }
+        }
+        System.out.println("error in retrieving the games for user " + userName);
+        return null;
     }
-
 }
