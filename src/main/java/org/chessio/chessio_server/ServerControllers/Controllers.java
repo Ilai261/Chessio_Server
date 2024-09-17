@@ -1,8 +1,8 @@
 package org.chessio.chessio_server.ServerControllers;
 
-import org.chessio.chessio_server.Models.Game;
+import org.chessio.chessio_server.Models.GameSummary;
 import org.chessio.chessio_server.Models.User;
-import org.chessio.chessio_server.Services.GameService;
+import org.chessio.chessio_server.Services.GameSummaryService;
 import org.chessio.chessio_server.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +20,7 @@ public class Controllers
     private UserService userService;
 
     @Autowired
-    private GameService gameService;
+    private GameSummaryService gameService;
 
     @PostMapping(value = "register")
     public String attemptToRegisterUser(@RequestBody User user)
@@ -51,13 +51,13 @@ public class Controllers
     }
 
     @PostMapping(value = "game_history")
-    public List<Game> getGameHistoryOfUser(@RequestBody String userName)
+    public List<GameSummary> getGameHistoryOfUser(@RequestBody String userName)
     {
         Optional<User> _user = userService.getUserByUsername(userName);
         if (_user.isPresent()) {
             try
             {
-                List<Game> gameList = gameService.getPlayerGameHistory(_user.get().getUserID());
+                List<GameSummary> gameList = gameService.getPlayerGameHistory(_user.get().getUserID());
                 System.out.println("game_history_retrieved_successfully");
                 return gameList;
             }
