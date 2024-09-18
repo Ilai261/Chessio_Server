@@ -249,8 +249,17 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
         String player1Username = sessionToUsername.get(player1.getId());
         String player2Username = sessionToUsername.get(player2.getId());
 
-        // send the gameId, color of play and enemy username
-        player1.sendMessage(new TextMessage(gameId + "|game_start|white|" + player2Username));
-        player2.sendMessage(new TextMessage(gameId + "|game_start|black|" + player1Username));
+        // Randomly assign one player as white and the other as black
+        boolean isPlayer1White = new Random().nextBoolean(); // Randomly decide who is white
+
+        if (isPlayer1White) {
+            // player1 is white and player2 is black
+            player1.sendMessage(new TextMessage(gameId + "|game_start|white|" + player2Username));
+            player2.sendMessage(new TextMessage(gameId + "|game_start|black|" + player1Username));
+        } else {
+            // player1 is black and player2 is white
+            player1.sendMessage(new TextMessage(gameId + "|game_start|black|" + player2Username));
+            player2.sendMessage(new TextMessage(gameId + "|game_start|white|" + player1Username));
+        }
     }
 }
