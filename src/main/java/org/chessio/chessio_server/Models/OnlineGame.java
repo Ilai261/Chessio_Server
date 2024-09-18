@@ -15,6 +15,10 @@ public class OnlineGame {
         this.turn = "white"; // White starts
     }
 
+    public boolean containsSession(WebSocketSession session) {
+        return session.equals(playerWhite) || session.equals(playerBlack);
+    }
+
     public String getGameId() {
         return gameId;
     }
