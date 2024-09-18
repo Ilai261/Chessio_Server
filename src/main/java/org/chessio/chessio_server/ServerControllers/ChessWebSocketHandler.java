@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -49,48 +50,127 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
             activeGames.put(gameId, game);
 
             // Notify both players that the game is starting and send game ID
-            sendGameStartMessage(session, opponentSession, gameId);
+            checkAndStartGame(session, opponentSession, gameId);
         }
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception
+    {
         // The message format should include the gameId for us to know which game this message belongs to
         String[] msgParts = message.getPayload().split("\\|");
-        if (msgParts[0].equals("username")) {
-            // This message is for setting the username
-            String username = msgParts[1];
-            sessionToUsername.put(session.getId(), username);
+
+        // first message - includes username
+        switch (msgParts[0]) {
+            case "username" -> {
+                // This message is for setting the username
+                String username = msgParts[1];
+                sessionToUsername.put(session.getId(), username);
+
+                // Check if this session is part of an active game and if we can start it
+                activeGames.values().forEach(game -> {
+                    if (game.containsSession(session)) {
+                        try {
+                            checkAndStartGame(game.getPlayerWhite(), game.getPlayerBlack(), game.getGameId());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+            // handle draw offers
+            case "draw_offer", "draw_offer_rejected", "draw_offer_accepted" -> handleDrawOfferMsg(session, msgParts);
+            case "resignation" -> handleResignationMessage(session, msgParts);
+            default -> handleGameMovesMessages(session, msgParts);
         }
+    }
+
+    private void handleGameMovesMessages(WebSocketSession session, String[] msgParts) throws IOException
+    {
+        // handle game moves
+        String gameId = msgParts[0];  // gameId is the first part of the message
+        String move = msgParts[1];    // move is the second part
+
+        OnlineGame game = activeGames.get(gameId);
+
+        if (game != null) {
+            WebSocketSession opponentSession = game.getOpponent(session);
+
+            // Forward the move to the opponent if it's their turn
+            if (game.getTurn().equals(session.equals(game.getPlayerWhite()) ? "white" : "black")) {
+                opponentSession.sendMessage(new TextMessage(gameId + "|" + move));
+
+                // Switch the turn in the game
+                game.switchTurn();
+            } else {
+                session.sendMessage(new TextMessage("not_your_turn"));
+            }
+        }
+        // player ended the game
+        else if (move.equals("white_win") || move.equals("black_win") || move.equals("draw")) {
+            // Handle game end and store game summary in the database
+            gameId = msgParts[2];
+            handleGameEnd(gameId, move);
+        }
+        // in case no case has worked, we have an error
         else
         {
-            // handle game moves
-            String gameId = msgParts[0];  // gameId is the first part of the message
-            String move = msgParts[1];    // move is the second part
+            session.sendMessage(new TextMessage("invalid message from client: " + Arrays.toString(msgParts)));
+        }
+    }
 
-            OnlineGame game = activeGames.get(gameId);
+    private void handleDrawOfferMsg(WebSocketSession session, String[] msgParts) throws IOException
+    {
+        switch (msgParts[0]) {
+            case "draw_offer" -> {
+                String gameId = msgParts[1];
+                OnlineGame game = activeGames.get(gameId);
 
-            if (game != null) {
-                WebSocketSession opponentSession = game.getOpponent(session);
-
-                // Forward the move to the opponent if it's their turn
-                if (game.getTurn().equals(session.equals(game.getPlayerWhite()) ? "white" : "black")) {
-                    opponentSession.sendMessage(new TextMessage(gameId + "|" + move));
-
-                    // Switch the turn in the game
-                    game.switchTurn();
-                } else {
-                    session.sendMessage(new TextMessage("not_your_turn"));
+                if (game != null) {
+                    WebSocketSession opponentSession = game.getOpponent(session);
+                    if (opponentSession != null && opponentSession.isOpen()) {
+                        opponentSession.sendMessage(new TextMessage("draw_offer|" + gameId));
+                    }
                 }
             }
-            else if (move.equals("white_win") || move.equals("black_win") || move.equals("draw")) {
-                // Handle game end and store game summary in the database
-                gameId = msgParts[2];
-                handleGameEnd(gameId, move);
+            case "draw_offer_accepted" -> {
+                String gameId = msgParts[1];
+
+                // Notify the opponent that the draw offer was accepted
+                OnlineGame game = activeGames.get(gameId);
+                if (game != null) {
+                    WebSocketSession opponentSession = game.getOpponent(session);
+                    if (opponentSession != null && opponentSession.isOpen()) {
+                        opponentSession.sendMessage(new TextMessage("draw_offer_accepted|" + gameId));
+                    }
+                }
+                // end game and save it to db
+                handleGameEnd(gameId, "draw");
             }
-            else {
-                session.sendMessage(new TextMessage("invalid_game"));
+            case "draw_offer_rejected" -> {
+                String gameId = msgParts[1];
+                OnlineGame game = activeGames.get(gameId);
+
+                if (game != null) {
+                    WebSocketSession opponentSession = game.getOpponent(session);
+                    if (opponentSession != null && opponentSession.isOpen()) {
+                        opponentSession.sendMessage(new TextMessage("draw_offer_rejected|" + gameId));
+                    }
+                }
             }
+        }
+    }
+
+    private void handleResignationMessage(WebSocketSession session, String[] msgParts) throws IOException {
+        // Handle game end and store game summary in the database
+        String gameId = msgParts[2];
+        String move = msgParts[1];
+        OnlineGame game = activeGames.get(gameId);
+
+        if (game != null) {
+            WebSocketSession opponentSession = game.getOpponent(session);
+            opponentSession.sendMessage(new TextMessage("enemy_resigned|" + gameId));
+            handleGameEnd(gameId, move);
         }
     }
 
@@ -152,8 +232,25 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
         session.sendMessage(new TextMessage("waiting_for_opponent"));
     }
 
-    private void sendGameStartMessage(WebSocketSession player1, WebSocketSession player2, String gameId) throws Exception {
-        player1.sendMessage(new TextMessage(gameId + "|game_start|white"));
-        player2.sendMessage(new TextMessage(gameId + "|game_start|black"));
+    private void checkAndStartGame(WebSocketSession player1, WebSocketSession player2, String gameId) throws Exception
+    {
+        String player1Username = sessionToUsername.get(player1.getId());
+        String player2Username = sessionToUsername.get(player2.getId());
+
+        if (player1Username != null && player2Username != null) {
+            // Both usernames are available, start the game
+            sendGameStartMessage(player1, player2, gameId);
+        }
+    }
+
+    private void sendGameStartMessage(WebSocketSession player1, WebSocketSession player2, String gameId) throws Exception
+    {
+        // get player usernames
+        String player1Username = sessionToUsername.get(player1.getId());
+        String player2Username = sessionToUsername.get(player2.getId());
+
+        // send the gameId, color of play and enemy username
+        player1.sendMessage(new TextMessage(gameId + "|game_start|white|" + player2Username));
+        player2.sendMessage(new TextMessage(gameId + "|game_start|black|" + player1Username));
     }
 }
