@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -48,7 +49,7 @@ class ChessioServerApplicationTests {
 
 		gameService.saveGameSummary(game);
 
-		List<GameSummary> games = gameService.getPlayerGameHistory(player1.getUserID());
+		LinkedList<GameSummary> games = gameService.getPlayerGameHistory(player1.getUserID());
 		assertFalse(games.isEmpty(), "Game history should not be empty for player1");
 
 		// Check if the game created is in the list
@@ -63,7 +64,7 @@ class ChessioServerApplicationTests {
 		// Use a random UUID for non-existent player
 		UUID nonExistentPlayerId = UUID.randomUUID();
 
-		List<GameSummary> games = gameService.getPlayerGameHistory(nonExistentPlayerId);
+		LinkedList<GameSummary> games = gameService.getPlayerGameHistory(nonExistentPlayerId);
 		assertTrue(games.isEmpty(), "Game history should be empty for non-existent player");
 	}
 
@@ -75,7 +76,7 @@ class ChessioServerApplicationTests {
 		player.setPassword("password");
 		userRepository.save(player);
 
-		List<GameSummary> games = gameService.getPlayerGameHistory(player.getUserID());
+		LinkedList<GameSummary> games = gameService.getPlayerGameHistory(player.getUserID());
 		assertTrue(games.isEmpty(), "Game history should be empty for a new player with no games");
 	}
 
