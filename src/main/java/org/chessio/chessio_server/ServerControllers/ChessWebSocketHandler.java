@@ -70,7 +70,8 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
                 // Check if this session is part of an active game and if we can start it
                 activeGames.values().forEach(game -> {
                     if (game.containsSession(session)) {
-                        try {
+                        try
+                        {
                             checkAndStartGame(game.getPlayerWhite(), game.getPlayerBlack(), game.getGameId());
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -256,7 +257,9 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
             // player1 is white and player2 is black
             player1.sendMessage(new TextMessage(gameId + "|game_start|white|" + player2Username));
             player2.sendMessage(new TextMessage(gameId + "|game_start|black|" + player1Username));
-        } else {
+        }
+        else
+        {
             // player1 is black and player2 is white
             player1.sendMessage(new TextMessage(gameId + "|game_start|black|" + player2Username));
             player2.sendMessage(new TextMessage(gameId + "|game_start|white|" + player1Username));

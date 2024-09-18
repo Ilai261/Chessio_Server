@@ -6,6 +6,7 @@ import org.chessio.chessio_server.Models.GameSummary;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,7 +25,7 @@ public class GameSummaryService {
 
     // method to retrieve a player's game history
     @Transactional(readOnly = true)
-    public List<GameSummary> getPlayerGameHistory(UUID userId)
+    public LinkedList<GameSummary> getPlayerGameHistory(UUID userId)
     {
         return gameRepository.findAllByPlayerId(userId);
     }
