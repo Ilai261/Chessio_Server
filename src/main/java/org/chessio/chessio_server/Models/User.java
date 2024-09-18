@@ -20,13 +20,13 @@ public class User
     private String password;
 
     @OneToMany(mappedBy = "player1")
-    private Set<Game> gamesAsPlayer1;
+    private Set<GameSummary> gamesAsPlayer1;
 
     @OneToMany(mappedBy = "player2")
-    private Set<Game> gamesAsPlayer2;
+    private Set<GameSummary> gamesAsPlayer2;
 
     @OneToMany(mappedBy = "winner")
-    private Set<Game> gamesWon;
+    private Set<GameSummary> gamesWon;
 
     // Getters and Setters
     public UUID getUserID() {
@@ -53,27 +53,27 @@ public class User
         this.password = password;
     }
 
-    public Set<Game> getGamesAsPlayer1() {
+    public Set<GameSummary> getGamesAsPlayer1() {
         return gamesAsPlayer1;
     }
 
-    public void setGamesAsPlayer1(Set<Game> gamesAsPlayer1) {
+    public void setGamesAsPlayer1(Set<GameSummary> gamesAsPlayer1) {
         this.gamesAsPlayer1 = gamesAsPlayer1;
     }
 
-    public Set<Game> getGamesAsPlayer2() {
+    public Set<GameSummary> getGamesAsPlayer2() {
         return gamesAsPlayer2;
     }
 
-    public void setGamesAsPlayer2(Set<Game> gamesAsPlayer2) {
+    public void setGamesAsPlayer2(Set<GameSummary> gamesAsPlayer2) {
         this.gamesAsPlayer2 = gamesAsPlayer2;
     }
 
-    public Set<Game> getGamesWon() {
+    public Set<GameSummary> getGamesWon() {
         return gamesWon;
     }
 
-    public void setGamesWon(Set<Game> gamesWon) {
+    public void setGamesWon(Set<GameSummary> gamesWon) {
         this.gamesWon = gamesWon;
     }
 }

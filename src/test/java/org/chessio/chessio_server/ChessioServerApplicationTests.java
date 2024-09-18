@@ -1,10 +1,10 @@
 package org.chessio.chessio_server;
 
-import org.chessio.chessio_server.Models.Game;
+import org.chessio.chessio_server.Models.GameSummary;
 import org.chessio.chessio_server.Models.User;
-import org.chessio.chessio_server.Repositories.GameRepository;
+import org.chessio.chessio_server.Repositories.GameSummaryRepository;
 import org.chessio.chessio_server.Repositories.UserRepository;
-import org.chessio.chessio_server.Services.GameService;
+import org.chessio.chessio_server.Services.GameSummaryService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,13 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ChessioServerApplicationTests {
 
 	@Autowired
-	private GameService gameService;
+	private GameSummaryService gameService;
 
 	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
-	private GameRepository gameRepository;
+	private GameSummaryRepository gameRepository;
 
 	@Test
 	public void testCreateGame() {
@@ -41,14 +41,14 @@ class ChessioServerApplicationTests {
 		player2.setPassword("password2");
 		userRepository.save(player2);
 
-		Game game = new Game();
+		GameSummary game = new GameSummary();
 		game.setPlayer1(player1);
 		game.setPlayer2(player2);
 		game.setWinner(player1);
 
-		gameService.saveGame(game);
+		gameService.saveGameSummary(game);
 
-		List<Game> games = gameService.getPlayerGameHistory(player1.getUserID());
+		List<GameSummary> games = gameService.getPlayerGameHistory(player1.getUserID());
 		assertFalse(games.isEmpty(), "Game history should not be empty for player1");
 
 		// Check if the game created is in the list
@@ -63,7 +63,7 @@ class ChessioServerApplicationTests {
 		// Use a random UUID for non-existent player
 		UUID nonExistentPlayerId = UUID.randomUUID();
 
-		List<Game> games = gameService.getPlayerGameHistory(nonExistentPlayerId);
+		List<GameSummary> games = gameService.getPlayerGameHistory(nonExistentPlayerId);
 		assertTrue(games.isEmpty(), "Game history should be empty for non-existent player");
 	}
 
@@ -75,7 +75,7 @@ class ChessioServerApplicationTests {
 		player.setPassword("password");
 		userRepository.save(player);
 
-		List<Game> games = gameService.getPlayerGameHistory(player.getUserID());
+		List<GameSummary> games = gameService.getPlayerGameHistory(player.getUserID());
 		assertTrue(games.isEmpty(), "Game history should be empty for a new player with no games");
 	}
 
