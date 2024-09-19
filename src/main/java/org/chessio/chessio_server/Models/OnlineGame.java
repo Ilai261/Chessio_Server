@@ -3,9 +3,9 @@ package org.chessio.chessio_server.Models;
 import org.springframework.web.socket.WebSocketSession;
 
 public class OnlineGame {
-    private String gameId;
-    private WebSocketSession playerWhite;
-    private WebSocketSession playerBlack;
+    private final String gameId;
+    private final WebSocketSession playerWhite;
+    private final WebSocketSession playerBlack;
     private String turn;
 
     public OnlineGame(String gameId, WebSocketSession playerWhite, WebSocketSession playerBlack) {

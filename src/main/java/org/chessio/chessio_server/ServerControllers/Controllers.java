@@ -7,12 +7,10 @@ import org.chessio.chessio_server.Models.User;
 import org.chessio.chessio_server.Services.GameSummaryService;
 import org.chessio.chessio_server.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 
 

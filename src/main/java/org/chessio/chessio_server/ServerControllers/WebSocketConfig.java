@@ -1,3 +1,6 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class
+
 package org.chessio.chessio_server.ServerControllers;
 
 import org.springframework.beans.factory.annotation.Autowired;

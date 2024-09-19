@@ -6,6 +6,7 @@ import org.chessio.chessio_server.Models.User;
 import org.chessio.chessio_server.Services.GameSummaryService;
 import org.chessio.chessio_server.Services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.*;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -15,11 +16,12 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class ChessWebSocketHandler extends TextWebSocketHandler {
+public class ChessWebSocketHandler extends TextWebSocketHandler
+{
 
-    private Map<String, WebSocketSession> waitingRoom = new HashMap<>(); // Players waiting for an opponent
-    private Map<String, OnlineGame> activeGames = new HashMap<>(); // Active games mapped by gameId
-    private Map<String, String> sessionToUsername = new ConcurrentHashMap<>();  // Maps session IDs to usernames
+    private final Map<String, WebSocketSession> waitingRoom = new HashMap<>(); // Players waiting for an opponent
+    private final Map<String, OnlineGame> activeGames = new HashMap<>(); // Active games mapped by gameId
+    private final Map<String, String> sessionToUsername = new ConcurrentHashMap<>();  // Maps session IDs to usernames
 
     @Autowired
     private UserService userService;
@@ -28,7 +30,8 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
     private GameSummaryService gameSummaryService;
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) throws Exception
+    {
         String playerId = session.getId();
 
         if (waitingRoom.isEmpty()) {
@@ -63,19 +66,15 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception
+    protected void handleTextMessage(@NonNull WebSocketSession session, TextMessage message) throws Exception
     {
         // The message format should include the gameId for us to know which game this message belongs to
         String[] msgParts = message.getPayload().split("\\|");
 
         // first message - includes username
         switch (msgParts[0]) {
-            case "username" -> {
-                handleUsernameMessage(session, msgParts);
-            }
-            case "quit_waiting_room" -> {
-                handleQuitWaitingRoom(session, msgParts[1]);  // msgParts[1] is the username
-            }
+            case "username" -> handleUsernameMessage(session, msgParts);
+            case "quit_waiting_room" -> handleQuitWaitingRoom(session, msgParts[1]);  // msgParts[1] is the username
             // handle draw offers
             case "draw_offer", "draw_offer_rejected", "draw_offer_accepted" -> handleDrawOfferMsg(session, msgParts);
             case "resignation" -> handleResignationMessage(session, msgParts);
@@ -95,7 +94,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
                 {
                     checkAndStartGame(game.getPlayerWhite(), game.getPlayerBlack(), game.getGameId());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println("Game starting failed: " + e.getMessage());
                 }
             }
         });
@@ -115,7 +114,8 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
 
         OnlineGame game = activeGames.get(gameId);
 
-        if (game != null) {
+        if (game != null)
+        {
             WebSocketSession opponentSession = game.getOpponent(session);
 
             // Forward the move to the opponent if it's their turn
@@ -124,7 +124,9 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
 
                 // Switch the turn in the game
                 game.switchTurn();
-            } else {
+            }
+            else
+            {
                 session.sendMessage(new TextMessage("not_your_turn"));
             }
         }
@@ -230,7 +232,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception
+    public void afterConnectionClosed(WebSocketSession session, @NonNull CloseStatus status) throws Exception
     {
         // Remove the session from the username map when the connection is closed
         sessionToUsername.remove(session.getId());

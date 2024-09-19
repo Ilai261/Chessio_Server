@@ -1,3 +1,6 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class defines the user service used to communicate with the user table
+
 package org.chessio.chessio_server.Services;
 
 import org.chessio.chessio_server.Models.User;

@@ -1,8 +1,10 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class is a test class for the game summary service
+
 package org.chessio.chessio_server;
 
 import org.chessio.chessio_server.Models.GameSummary;
 import org.chessio.chessio_server.Models.User;
-import org.chessio.chessio_server.Repositories.GameSummaryRepository;
 import org.chessio.chessio_server.Repositories.UserRepository;
 import org.chessio.chessio_server.Services.GameSummaryService;
 import org.junit.jupiter.api.Test;
@@ -11,7 +13,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,9 +27,6 @@ class ChessioServerApplicationTests {
 
 	@Autowired
 	private UserRepository userRepository;
-
-	@Autowired
-	private GameSummaryRepository gameRepository;
 
 	@Test
 	public void testCreateGame() {

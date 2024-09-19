@@ -1,3 +1,6 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class defines the game summary service used to communicate with the game summary table
+
 package org.chessio.chessio_server.Services;
 
 import org.chessio.chessio_server.Repositories.GameSummaryRepository;
@@ -7,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.UUID;
 
 @Service
