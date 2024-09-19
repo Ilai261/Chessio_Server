@@ -46,7 +46,15 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
             String gameId = UUID.randomUUID().toString();
 
             // Create a new game session
-            OnlineGame game = new OnlineGame(gameId, session, opponentSession);
+            boolean isPlayer1White = new Random().nextBoolean(); // Randomly decide who is white
+            OnlineGame game;
+            if(isPlayer1White) {
+                game = new OnlineGame(gameId, session, opponentSession);
+            }
+            else
+            {
+                game = new OnlineGame(gameId, opponentSession, session);
+            }
             activeGames.put(gameId, game);
 
             // Notify both players that the game is starting and send game ID
@@ -240,29 +248,9 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
 
         if (player1Username != null && player2Username != null) {
             // Both usernames are available, start the game
-            sendGameStartMessage(player1, player2, gameId);
-        }
-    }
-
-    private void sendGameStartMessage(WebSocketSession player1, WebSocketSession player2, String gameId) throws Exception
-    {
-        // get player usernames
-        String player1Username = sessionToUsername.get(player1.getId());
-        String player2Username = sessionToUsername.get(player2.getId());
-
-        // Randomly assign one player as white and the other as black
-        boolean isPlayer1White = new Random().nextBoolean(); // Randomly decide who is white
-
-        if (isPlayer1White) {
             // player1 is white and player2 is black
             player1.sendMessage(new TextMessage(gameId + "|game_start|white|" + player2Username));
             player2.sendMessage(new TextMessage(gameId + "|game_start|black|" + player1Username));
-        }
-        else
-        {
-            // player1 is black and player2 is white
-            player1.sendMessage(new TextMessage(gameId + "|game_start|black|" + player2Username));
-            player2.sendMessage(new TextMessage(gameId + "|game_start|white|" + player1Username));
         }
     }
 }
