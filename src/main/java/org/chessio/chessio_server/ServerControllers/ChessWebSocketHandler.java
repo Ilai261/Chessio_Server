@@ -71,27 +71,40 @@ public class ChessWebSocketHandler extends TextWebSocketHandler {
         // first message - includes username
         switch (msgParts[0]) {
             case "username" -> {
-                // This message is for setting the username
-                String username = msgParts[1];
-                sessionToUsername.put(session.getId(), username);
-
-                // Check if this session is part of an active game and if we can start it
-                activeGames.values().forEach(game -> {
-                    if (game.containsSession(session)) {
-                        try
-                        {
-                            checkAndStartGame(game.getPlayerWhite(), game.getPlayerBlack(), game.getGameId());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+                handleUsernameMessage(session, msgParts);
+            }
+            case "quit_waiting_room" -> {
+                handleQuitWaitingRoom(session, msgParts[1]);  // msgParts[1] is the username
             }
             // handle draw offers
             case "draw_offer", "draw_offer_rejected", "draw_offer_accepted" -> handleDrawOfferMsg(session, msgParts);
             case "resignation" -> handleResignationMessage(session, msgParts);
             default -> handleGameMovesMessages(session, msgParts);
         }
+    }
+
+    private void handleUsernameMessage(WebSocketSession session, String[] msgParts) {
+        // This message is for setting the username
+        String username = msgParts[1];
+        sessionToUsername.put(session.getId(), username);
+
+        // Check if this session is part of an active game and if we can start it
+        activeGames.values().forEach(game -> {
+            if (game.containsSession(session)) {
+                try
+                {
+                    checkAndStartGame(game.getPlayerWhite(), game.getPlayerBlack(), game.getGameId());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private void handleQuitWaitingRoom(WebSocketSession session, String username) {
+        // Remove the player from the waiting room if present
+        waitingRoom.values().removeIf(existingSession -> existingSession.equals(session));
+        System.out.println("Player " + username + " removed from waiting room.");
     }
 
     private void handleGameMovesMessages(WebSocketSession session, String[] msgParts) throws IOException
