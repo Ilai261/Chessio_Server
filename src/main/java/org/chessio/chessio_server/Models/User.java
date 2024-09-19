@@ -1,3 +1,6 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class defines the user entity
+
 package org.chessio.chessio_server.Models;
 
 import jakarta.persistence.*;
@@ -8,6 +11,7 @@ import java.util.UUID;
 @Entity
 public class User
 {
+    // user ID is a UUID
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)", unique = true, nullable = false)
@@ -19,6 +23,7 @@ public class User
     @Column(nullable = false)
     private String password;
 
+    // one to many mapping helps the db to get the games where the user played or won more easily
     @OneToMany(mappedBy = "player1")
     private Set<GameSummary> gamesAsPlayer1;
 

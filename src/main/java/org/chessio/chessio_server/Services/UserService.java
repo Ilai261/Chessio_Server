@@ -16,16 +16,19 @@ public class UserService
     @Autowired
     private UserRepository userRepository;
 
+    // saves a user in the db
     public void saveUser(User user)
     {
         userRepository.save(user);
     }
 
+    // checks if a user exists in the db by username
     public boolean userExistsByUsername(String userName)
     {
         return userRepository.findByuserName(userName).isPresent();
     }
 
+    // returns a user from the db by username
     public Optional<User> getUserByUsername(String userName)
     {
         return userRepository.findByuserName(userName);

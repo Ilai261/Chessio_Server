@@ -18,7 +18,7 @@ public class GameSummaryService {
     @Autowired
     private GameSummaryRepository gameRepository;
 
-    // method to save a new game
+    // method to save a new game summary
     @Transactional
     public void saveGameSummary(GameSummary game)
     {

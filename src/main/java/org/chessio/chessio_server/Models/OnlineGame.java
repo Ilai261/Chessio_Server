@@ -1,8 +1,14 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class defines the online game object
+
 package org.chessio.chessio_server.Models;
 
 import org.springframework.web.socket.WebSocketSession;
 
-public class OnlineGame {
+// this object is used in the websocket handler, represents an ongoing game
+public class OnlineGame
+{
+    // each game has an ID, two websocket sessions (one for each user) and current turn value
     private final String gameId;
     private final WebSocketSession playerWhite;
     private final WebSocketSession playerBlack;

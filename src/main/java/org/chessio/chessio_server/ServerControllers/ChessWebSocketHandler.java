@@ -1,3 +1,6 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class contains the ChessWebSocketHandler class which defines every game websocket
+
 package org.chessio.chessio_server.ServerControllers;
 
 import org.chessio.chessio_server.Models.GameSummary;
@@ -19,9 +22,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChessWebSocketHandler extends TextWebSocketHandler
 {
 
-    private final Map<String, WebSocketSession> waitingRoom = new HashMap<>(); // Players waiting for an opponent
-    private final Map<String, OnlineGame> activeGames = new HashMap<>(); // Active games mapped by gameId
-    private final Map<String, String> sessionToUsername = new ConcurrentHashMap<>();  // Maps session IDs to usernames
+    private final Map<String, WebSocketSession> waitingRoom = new HashMap<>(); // players waiting for an opponent
+    private final Map<String, OnlineGame> activeGames = new HashMap<>(); // active games mapped by gameId
+    private final Map<String, String> sessionToUsername = new ConcurrentHashMap<>();  // maps session IDs to usernames
 
     @Autowired
     private UserService userService;
@@ -35,21 +38,21 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
         String playerId = session.getId();
 
         if (waitingRoom.isEmpty()) {
-            waitingRoom.put(playerId, session); // Add player to waiting room
+            waitingRoom.put(playerId, session); // add player to waiting room
             sendWaitingRoomMessage(session);
         } else {
-            // Pair with the first player in the waiting room
+            // pair with the first player in the waiting room
             Map.Entry<String, WebSocketSession> waitingPlayer = waitingRoom.entrySet().iterator().next();
             String opponentId = waitingPlayer.getKey();
             WebSocketSession opponentSession = waitingPlayer.getValue();
 
-            waitingRoom.remove(opponentId); // Remove from waiting room
+            waitingRoom.remove(opponentId); // remove from waiting room
 
-            // Generate a unique game ID
+            // generate a unique game ID
             String gameId = UUID.randomUUID().toString();
 
-            // Create a new game session
-            boolean isPlayer1White = new Random().nextBoolean(); // Randomly decide who is white
+            // create a new game session
+            boolean isPlayer1White = new Random().nextBoolean(); // randomly decide who is white
             OnlineGame game;
             if(isPlayer1White) {
                 game = new OnlineGame(gameId, session, opponentSession);
@@ -60,7 +63,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
             }
             activeGames.put(gameId, game);
 
-            // Notify both players that the game is starting and send game ID
+            // notify both players that the game is starting and send game ID
             checkAndStartGame(session, opponentSession, gameId);
         }
     }
@@ -68,7 +71,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
     @Override
     protected void handleTextMessage(@NonNull WebSocketSession session, TextMessage message) throws Exception
     {
-        // The message format should include the gameId for us to know which game this message belongs to
+        // the message format should include the gameId for us to know which game this message belongs to
         String[] msgParts = message.getPayload().split("\\|");
 
         // first message - includes username
@@ -83,11 +86,11 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
     }
 
     private void handleUsernameMessage(WebSocketSession session, String[] msgParts) {
-        // This message is for setting the username
+        // this message is for setting the username
         String username = msgParts[1];
         sessionToUsername.put(session.getId(), username);
 
-        // Check if this session is part of an active game and if we can start it
+        // check if this session is part of an active game and if we can start it
         activeGames.values().forEach(game -> {
             if (game.containsSession(session)) {
                 try
@@ -101,7 +104,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
     }
 
     private void handleQuitWaitingRoom(WebSocketSession session, String username) {
-        // Remove the player from the waiting room if present
+        // remove the player from the waiting room if present
         waitingRoom.values().removeIf(existingSession -> existingSession.equals(session));
         System.out.println("Player " + username + " removed from waiting room.");
     }
@@ -118,11 +121,11 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
         {
             WebSocketSession opponentSession = game.getOpponent(session);
 
-            // Forward the move to the opponent if it's their turn
+            // forward the move to the opponent if it's their turn
             if (game.getTurn().equals(session.equals(game.getPlayerWhite()) ? "white" : "black")) {
                 opponentSession.sendMessage(new TextMessage(gameId + "|" + move));
 
-                // Switch the turn in the game
+                // switch the turn in the game
                 game.switchTurn();
             }
             else
@@ -132,7 +135,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
         }
         // player ended the game
         else if (move.equals("white_win") || move.equals("black_win") || move.equals("draw")) {
-            // Handle game end and store game summary in the database
+            // handle game end and store game summary in the database
             gameId = msgParts[2];
             handleGameEnd(gameId, move);
         }
@@ -146,6 +149,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
     private void handleDrawOfferMsg(WebSocketSession session, String[] msgParts) throws IOException
     {
         switch (msgParts[0]) {
+            // if player offers a draw to opponent, send it to him
             case "draw_offer" -> {
                 String gameId = msgParts[1];
                 OnlineGame game = activeGames.get(gameId);
@@ -171,6 +175,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
                 // end game and save it to db
                 handleGameEnd(gameId, "draw");
             }
+            // notify the sender that his draw offer has been rejected
             case "draw_offer_rejected" -> {
                 String gameId = msgParts[1];
                 OnlineGame game = activeGames.get(gameId);
@@ -186,12 +191,13 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
     }
 
     private void handleResignationMessage(WebSocketSession session, String[] msgParts) throws IOException {
-        // Handle game end and store game summary in the database
+        // handle game end and store game summary in the database
         String gameId = msgParts[2];
         String move = msgParts[1];
         OnlineGame game = activeGames.get(gameId);
 
         if (game != null) {
+            // send resignation message to opponent
             WebSocketSession opponentSession = game.getOpponent(session);
             opponentSession.sendMessage(new TextMessage("enemy_resigned|" + gameId));
             handleGameEnd(gameId, move);
@@ -203,15 +209,15 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
         OnlineGame game = activeGames.get(gameId);
 
         if (game != null) {
-            // Retrieve usernames for player1 and player2
+            // retrieve usernames for player1 and player2
             String player1Username = sessionToUsername.get(game.getPlayerWhite().getId());
             String player2Username = sessionToUsername.get(game.getPlayerBlack().getId());
 
-            // Fetch player information from the database using the usernames
+            // fetch player information from the database using the usernames
             User player1 = userService.getUserByUsername(player1Username).orElse(null);
             User player2 = userService.getUserByUsername(player2Username).orElse(null);
 
-            // Determine winner based on result
+            // determine winner based on result
             User winner = null;
             if (result.equals("white_win")) {
                 winner = player1;
@@ -219,7 +225,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
                 winner = player2;
             }
 
-            // Create a GameSummary
+            // create a GameSummary
             GameSummary summary = new GameSummary();
             summary.setPlayer1(player1);
             summary.setPlayer2(player2);
@@ -234,10 +240,10 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
     @Override
     public void afterConnectionClosed(WebSocketSession session, @NonNull CloseStatus status) throws Exception
     {
-        // Remove the session from the username map when the connection is closed
+        // remove the session from the username map when the connection is closed
         sessionToUsername.remove(session.getId());
 
-        // Remove the game and notify the opponent
+        // remove the game and notify the opponent
         for (Map.Entry<String, OnlineGame> entry : activeGames.entrySet()) {
             OnlineGame game = entry.getValue();
             if (game.getPlayerWhite().equals(session) || game.getPlayerBlack().equals(session)) {
@@ -252,6 +258,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
         }
     }
 
+    // sends a message indicating to the user that they are in the waiting room
     private void sendWaitingRoomMessage(WebSocketSession session) throws Exception {
         session.sendMessage(new TextMessage("waiting_for_opponent"));
     }
@@ -262,7 +269,7 @@ public class ChessWebSocketHandler extends TextWebSocketHandler
         String player2Username = sessionToUsername.get(player2.getId());
 
         if (player1Username != null && player2Username != null) {
-            // Both usernames are available, start the game
+            // both usernames are available, start the game
             // player1 is white and player2 is black
             player1.sendMessage(new TextMessage(gameId + "|game_start|white|" + player2Username));
             player2.sendMessage(new TextMessage(gameId + "|game_start|black|" + player1Username));

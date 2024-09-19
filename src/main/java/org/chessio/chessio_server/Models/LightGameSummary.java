@@ -1,5 +1,10 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class defines the light game summary, used to send info to the client about a game. doesn't contain users
+// passwords and UUIDs
+
 package org.chessio.chessio_server.Models;
 
+// the lighter game summary object
 public class LightGameSummary
 {
     private String player1;

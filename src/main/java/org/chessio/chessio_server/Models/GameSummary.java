@@ -1,3 +1,6 @@
+// Written by Ilai Azaria and Eitan Feldsherovich, 2024
+// This class defines the GameSummary entity
+
 package org.chessio.chessio_server.Models;
 
 import jakarta.persistence.*;
@@ -7,11 +10,13 @@ import java.util.UUID;
 @Entity
 public class GameSummary
 {
+    // each game has a UUID
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(columnDefinition = "BINARY(16)", unique = true, nullable = false)
     private UUID gameID;
 
+    // many to one mapping helps to access each player from the game object more easily
     @ManyToOne()
     @JoinColumn(name = "player1_id", nullable = false)
     private User player1;
@@ -24,7 +29,6 @@ public class GameSummary
     @JoinColumn(name = "winner_id")
     private User winner;
 
-    // Getters and Setters
     public UUID getGameID() {
         return gameID;
     }

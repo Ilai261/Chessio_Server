@@ -1,5 +1,5 @@
 // Written by Ilai Azaria and Eitan Feldsherovich, 2024
-// This class
+// This class configures the server websockets
 
 package org.chessio.chessio_server.ServerControllers;
 
@@ -16,6 +16,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     @Autowired
     private ChessWebSocketHandler chessWebSocketHandler;
 
+    // handles games under /game
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(chessWebSocketHandler, "/game").setAllowedOrigins("*");
